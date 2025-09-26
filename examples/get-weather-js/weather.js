@@ -1,35 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { get } from "wasi:config/store@0.2.0-draft";
-
 export async function getWeather(city) {
-  const apiKey = await get("OPENWEATHER_API_KEY");
-  if (apiKey === undefined) {
-    throw "Error: OPENWEATHER_API_KEY is not set";
-  }
-
   try {
+    // Geocode the location using Open-Meteo
     const geoResponse = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
     );
     if (!geoResponse.ok) {
       throw "Error: Failed to fetch geo data";
     }
     const geoData = await geoResponse.json();
-    const lat = geoData[0].lat;
-    const lon = geoData[0].lon;
+    if (!geoData.results || geoData.results.length === 0) {
+      throw `Error: Location '${city}' not found`;
+    }
+
+    const lat = geoData.results[0].latitude;
+    const lon = geoData.results[0].longitude;
+
+    // Get weather data from Open-Meteo
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m`
     );
     if (!response.ok) {
       throw "Error: Failed to fetch weather data";
     }
     const data = await response.json();
-    const weather = data.main.temp.toString();
-    return weather;  
+    const weather = data.current.temperature_2m.toString();
+    return weather;
   } catch (error) {
     throw error.message || "Error fetching weather data";
   }
-  
 }

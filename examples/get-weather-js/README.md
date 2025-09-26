@@ -6,13 +6,9 @@ For more information on installing Wassette, please see the [installation instru
 
 ## Usage
 
-To use this component, you will need an API key from [OpenWeather](https://openweathermap.org/api). Export the API key as an environment variable:
+This component uses the [Open-Meteo API](https://open-meteo.com/), which provides free weather data without requiring authentication.
 
-```bash
-export OPENWEATHER_API_KEY="your_api_key_here"
-```
-
-Then, load the component from the OCI registry and provide a latitude and longitude.
+Load the component from the OCI registry and provide a city name.
 
 **Load the component:**
 
@@ -23,7 +19,7 @@ Please load the component from oci://ghcr.io/microsoft/get-weather-js:latest
 **Get the weather:**
 
 ```
-get the weather for latitude 43.65 and longitude -79.38
+get the weather for Toronto
 ```
 
 ## Policy
@@ -38,10 +34,8 @@ description: "Permission policy for wassette weather demo"
 permissions:
   network:
     allow:
-      - host: "api.openweathermap.org"
-  environment:
-    allow:
-      - key: "OPENWEATHER_API_KEY"
+      - host: "geocoding-api.open-meteo.com"  # For geocoding city names to coordinates
+      - host: "api.open-meteo.com"            # For fetching weather data
 ```
 
 The source code for this example can be found in [`weather.js`](weather.js).
